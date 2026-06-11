@@ -1,0 +1,3 @@
+# Local Azure provisioning output
+.env.local
+.local/
