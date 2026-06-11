@@ -14,7 +14,7 @@ async function analyzeGamertag(inputGamertag) {
   const sourceStatuses = getSourceStatuses(gamertag);
   const steamProfile = await lookupSteamPublicProfile(gamertag);
 
-  sourceStatuses[2] = createSteamProfileStatus(gamertag, steamProfile);
+  sourceStatuses[0] = createSteamProfileStatus(gamertag, steamProfile);
 
   const publicSignals = steamProfile
     ? [

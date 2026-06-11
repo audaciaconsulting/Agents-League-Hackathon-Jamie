@@ -84,6 +84,20 @@ body {
   padding: 2rem;
 }
 
+body.analysis-view .hero {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+body.analysis-view .hero-copy > :not(.lookup-form),
+body.analysis-view .hero-panel,
+body.analysis-view .hero .field-label {
+  display: none;
+}
+
+body.analysis-view .lookup-form {
+  margin-top: 0;
+}
+
 .hero-copy h1,
 .panel h2 {
   margin: 0;

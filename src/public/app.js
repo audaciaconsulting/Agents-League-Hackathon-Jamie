@@ -6,6 +6,10 @@ const statusBadge = document.getElementById('status-badge');
 const sourceList = document.getElementById('source-list');
 const recommendations = document.getElementById('recommendations');
 
+function setAnalysisView(isAnalysisView) {
+  document.body.classList.toggle('analysis-view', isAnalysisView);
+}
+
 function setStatus(state, title, copy) {
   statusBadge.className = `status-badge ${state}`;
   statusBadge.textContent = state === 'busy' ? 'Running' : state === 'error' ? 'Blocked' : state === 'ready' ? 'Ready' : 'Idle';
@@ -83,6 +87,7 @@ form.addEventListener('submit', async (event) => {
     return;
   }
 
+  setAnalysisView(true);
   setStatus('busy', `Analyzing ${gamertag}`, 'Checking public source availability and preparing the Foundry payload.');
   recommendations.className = 'recommendations empty-state';
   recommendations.textContent = 'Running analysis...';
@@ -114,7 +119,7 @@ form.addEventListener('submit', async (event) => {
 
 setStatus('idle', 'Waiting for a gamertag', 'Add a name to inspect public signals and Foundry output.');
 renderSources([
+  { label: 'Steam', state: 'public-profile-found', note: 'Try a Steam vanity name to see public profile metadata.', profile: null },
   { label: 'Xbox', state: 'planned', note: 'Public adapter still needs verification.' },
   { label: 'PlayStation', state: 'planned', note: 'Deferred until a compliant public-data source is confirmed.' },
-  { label: 'Steam', state: 'public-profile-found', note: 'Try a Steam vanity name to see public profile metadata.', profile: null },
 ]);

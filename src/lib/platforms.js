@@ -25,6 +25,12 @@ function getSourceStatuses(gamertag) {
   return [
     createSourceStatus(
       gamertag,
+      'steam',
+      'Steam',
+      'Steam public profile lookup is available through the adapter.'
+    ),
+    createSourceStatus(
+      gamertag,
       'xbox',
       'Xbox',
       'Public unauthenticated play-history access still needs a verified adapter.'
@@ -34,12 +40,6 @@ function getSourceStatuses(gamertag) {
       'playstation',
       'PlayStation',
       'Deferred until a compliant public-data connector is confirmed.'
-    ),
-    createSourceStatus(
-      gamertag,
-      'steam',
-      'Steam',
-      'Steam public profile lookup is available through the adapter.'
     ),
   ];
 }
