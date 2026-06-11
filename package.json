@@ -1,0 +1,11 @@
+{
+  "name": "agents-league-hackathon-jamie",
+  "private": true,
+  "version": "0.1.0",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "node src/server.js",
+    "start": "node src/server.js",
+    "check": "node --check src/server.js && node --check src/lib/analyze.js && node --check src/lib/env.js && node --check src/lib/foundry.js && node --check src/lib/platforms.js && node --check src/public/app.js"
+  }
+}

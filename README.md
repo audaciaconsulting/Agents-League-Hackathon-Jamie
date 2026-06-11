@@ -1,8 +1,36 @@
 # Agents-League-Hackathon-Jamie
 
+Lightweight web app for public gaming profile analysis and Azure AI Foundry
+insights.
+
+## App
+
+The current implementation is a dependency-free web app scaffold with a small
+Node server, a gamertag input flow, and a Foundry connector layer that can be
+wired to a real endpoint later.
+
+### Run locally
+
+1. Copy `.env.example` to `.env.local` and fill in the Azure provisioning
+	 values.
+2. Start the app with `npm run dev`.
+3. Open `http://localhost:3000`.
+
+### Current behavior
+
+- Accepts a gamertag from the UI.
+- Calls a server endpoint that gathers public-data-only source data.
+- Returns Foundry-style recommendations through a dedicated analysis layer.
+- Performs a real public Steam profile lookup by vanity URL and surfaces the
+	returned metadata in the UI.
+- Keeps Xbox and PlayStation clearly marked as deferred until a compliant
+	public-data source is wired in.
+
 ## Azure Foundry / Azure AI Services setup
 
-Use [scripts/create-azure-foundry-instance.ps1](scripts/create-azure-foundry-instance.ps1) to provision the Azure resource and store the connection details in your local `.env.local` file.
+Use [scripts/create-azure-foundry-instance.ps1](scripts/create-azure-foundry-instance.ps1)
+to provision the Azure resource and store the connection details in your local
+`.env.local` file.
 
 Add these values to `.env.local` before running the script:
 
@@ -17,12 +45,15 @@ AZURE_KIND=AIServices
 
 These values are used as follows:
 
-- `AZURE_SUBSCRIPTION_ID`: selects the subscription that will own the resource.
-- `AZURE_RESOURCE_GROUP_NAME`: names the resource group the script creates or reuses.
+- `AZURE_SUBSCRIPTION_ID`: selects the subscription that will own the
+	resource.
+- `AZURE_RESOURCE_GROUP_NAME`: names the resource group the script creates or
+	reuses.
 - `AZURE_LOCATION`: sets the Azure region for the resource.
 - `AZURE_ACCOUNT_NAME`: names the Azure AI Services account.
 - `AZURE_SKU`: selects the account SKU, with `S0` as the default if omitted.
-- `AZURE_KIND`: selects the account kind, with `AIServices` as the default if omitted.
+- `AZURE_KIND`: selects the account kind, with `AIServices` as the default if
+	omitted.
 
 After provisioning, the script writes these values back into `.env.local`:
 
@@ -32,3 +63,17 @@ After provisioning, the script writes these values back into `.env.local`:
 - `AZURE_AI_RESOURCE_GROUP`: the resource group used by the account.
 - `AZURE_AI_LOCATION`: the region used by the account.
 - `AZURE_AI_ACCOUNT_NAME`: the provisioned account name.
+
+## Public Data Policy
+
+The app is designed to use only public information. If a platform does not
+expose the needed data without authentication, the app reports that gap rather
+than attempting to bypass access controls.
+
+## Current Adapter Scope
+
+- Steam public profile XML is the first live adapter.
+- The gamertag input is currently treated as a Steam vanity name for that
+	lookup path.
+- Xbox and PlayStation remain planned adapters until a compliant public source
+	is verified.
