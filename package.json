@@ -4,8 +4,15 @@
   "version": "0.1.0",
   "type": "commonjs",
   "scripts": {
-    "dev": "node src/server.js",
+    "dev": "concurrently -k -n server,reload -c green,blue \"npm run dev:server\" \"npm run dev:reload\"",
+    "dev:server": "cross-env PORT=3001 node --watch src/server.js",
+    "dev:reload": "browser-sync start --proxy http://localhost:3001 --files \"src/public/**/*\" --no-open --no-ui",
     "start": "node src/server.js",
     "check": "node --check src/server.js && node --check src/lib/analyze.js && node --check src/lib/env.js && node --check src/lib/foundry.js && node --check src/lib/platforms.js && node --check src/public/app.js"
+  },
+  "devDependencies": {
+    "browser-sync": "3.0.3",
+    "concurrently": "9.1.2",
+    "cross-env": "7.0.3"
   }
 }

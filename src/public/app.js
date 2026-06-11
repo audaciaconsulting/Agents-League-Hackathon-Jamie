@@ -112,7 +112,7 @@ form.addEventListener('submit', async (event) => {
   }
 });
 
-setStatus('idle', 'Waiting for a gamertag', 'Enter a player name to inspect public source status and Foundry output.');
+setStatus('idle', 'Waiting for a gamertag', 'Add a name to inspect public signals and Foundry output.');
 renderSources([
   { label: 'Xbox', state: 'planned', note: 'Public adapter still needs verification.' },
   { label: 'PlayStation', state: 'planned', note: 'Deferred until a compliant public-data source is confirmed.' },

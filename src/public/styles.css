@@ -180,6 +180,30 @@ body {
   margin-top: 1.35rem;
 }
 
+.hero-status {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.35rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(173, 200, 228, 0.12);
+  background: rgba(4, 10, 20, 0.42);
+}
+
+.hero-status h2 {
+  margin: 0;
+  font-size: clamp(1.15rem, 2vw, 1.45rem);
+  letter-spacing: -0.03em;
+}
+
+.hero-status .panel-copy {
+  margin: 0.35rem 0 0;
+  max-width: 52ch;
+  font-size: 0.96rem;
+}
+
 .pill,
 .status-badge {
   display: inline-flex;
@@ -250,6 +274,10 @@ body {
 .panel {
   grid-column: span 4;
   padding: 1.35rem;
+}
+
+.panel.connectors {
+  grid-column: 9 / span 4;
 }
 
 .panel.wide {
@@ -334,6 +362,17 @@ body {
   }
 }
 
+@media (min-width: 961px) {
+  .dashboard .panel.wide {
+    grid-column: 1 / span 8;
+    grid-row: 1;
+  }
+
+  .dashboard .panel.connectors {
+    grid-row: 1;
+  }
+}
+
 @media (max-width: 680px) {
   .shell {
     width: min(100vw - 1rem, 1180px);
@@ -351,6 +390,10 @@ body {
 
   .lookup-row button {
     min-height: 3.1rem;
+  }
+
+  .hero-status {
+    flex-direction: column;
   }
 
   .hero-copy h1 {
