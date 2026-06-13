@@ -1,10 +1,5 @@
 import { Component, Input } from '@angular/core';
-
-export interface Recommendation {
-  title: string;
-  reason?: string;
-  confidence?: number;
-}
+import type { Recommendation } from '../../interfaces/recommendation.interface';
 
 @Component({
   selector: 'app-recommendation-card',

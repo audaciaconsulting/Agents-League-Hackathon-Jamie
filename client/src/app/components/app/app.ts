@@ -3,33 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
-import { RecommendationCardComponent, type Recommendation } from './recommendation-card.component';
-
-interface SourceProfile {
-  steamId?: string;
-  avatarFull?: string;
-  customUrl?: string;
-  memberSince?: string;
-  location?: string;
-  stateMessage?: string;
-  summary?: string;
-}
-
-interface SourceStatus {
-  id: string;
-  label: string;
-  state: string;
-  note: string;
-  profile?: SourceProfile;
-}
-
-interface AnalyzeResponse {
-  gamertag: string;
-  summary: string;
-  sourceStatuses?: SourceStatus[];
-  recommendations?: Recommendation[];
-  foundry?: { connected?: boolean };
-}
+import { RecommendationCardComponent } from '../recommendation-card/recommendation-card.component';
+import type { AnalyzeResponse } from '../../interfaces/analyze-response.interface';
+import type { Recommendation } from '../../interfaces/recommendation.interface';
+import type { SourceStatus } from '../../interfaces/source-status.interface';
 
 @Component({
   selector: 'app-root',
