@@ -18,7 +18,7 @@ wired to a real endpoint later.
 	the Angular client.
 
 For the server-only path, `npm start` now builds the Angular client first and
-serves the generated app shell from `client/dist/client/browser`.
+serves the generated app shell from `src/client/dist/client/browser`.
 
 ### Current behavior
 

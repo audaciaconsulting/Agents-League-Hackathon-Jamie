@@ -1,6 +1,6 @@
 ---
 description: 'Angular frontend development standards for the client application'
-applyTo: 'client/src/**/*.{ts,html,css}, client/angular.json, client/package.json, client/proxy.conf.json, client/tsconfig*.json'
+applyTo: 'src/client/src/**/*.{ts,html,css}, src/client/angular.json, src/client/package.json, src/client/proxy.conf.json, src/client/tsconfig*.json'
 ---
 
 # Angular Frontend Development Instructions

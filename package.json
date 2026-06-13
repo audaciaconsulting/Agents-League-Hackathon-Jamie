@@ -6,10 +6,10 @@
   "scripts": {
     "dev": "concurrently -k -n server,client -c green,blue \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "cross-env PORT=3001 node --watch src/server.js",
-    "dev:client": "npm --prefix client run start",
-    "build:client": "npm --prefix client run build",
+    "dev:client": "npm --prefix src/client run start",
+    "build:client": "npm --prefix src/client run build",
     "start": "npm run build:client && node src/server.js",
-    "check": "node --check src/server.js && node --check src/lib/analyze.js && node --check src/lib/env.js && node --check src/lib/foundry.js && node --check src/lib/platforms.js && npm --prefix client run build"
+    "check": "node --check src/server.js && node --check src/lib/analyze.js && node --check src/lib/env.js && node --check src/lib/foundry.js && node --check src/lib/platforms.js && npm --prefix src/client run build"
   },
   "devDependencies": {
     "concurrently": "9.1.2",

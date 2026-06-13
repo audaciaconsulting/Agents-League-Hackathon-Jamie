@@ -4,7 +4,7 @@ const path = require('path');
 const { analyzeGamertag } = require('./lib/analyze');
 
 const port = Number(process.env.PORT || 3000);
-const clientBrowserDir = path.resolve(__dirname, '..', 'client', 'dist', 'client', 'browser');
+const clientBrowserDir = path.resolve(__dirname, 'client', 'dist', 'client', 'browser');
 
 const mimeTypes = new Map([
   ['.html', 'text/html; charset=utf-8'],
@@ -130,7 +130,7 @@ const server = http.createServer(async (request, response) => {
   }
 
   response.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
-  response.end('Angular build output not found. Run `npm --prefix client run build` first.');
+  response.end('Angular build output not found. Run `npm --prefix src/client run build` first.');
 });
 
 server.listen(port, () => {
