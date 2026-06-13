@@ -1,0 +1,68 @@
+:host {
+	display: block;
+}
+
+.source-card {
+	padding: 1rem;
+	border-radius: var(--radius-md);
+	border: 1px solid rgba(173, 200, 228, 0.12);
+	background: rgba(4, 10, 20, 0.56);
+}
+
+.source-card-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.8rem;
+	margin-bottom: 0.55rem;
+}
+
+.source-card-title {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	min-width: 0;
+}
+
+.source-avatar-slot {
+	flex: 0 0 auto;
+	width: 3rem;
+	height: 3rem;
+	border-radius: 999px;
+	padding: 2px;
+	background: linear-gradient(135deg, rgba(49, 208, 198, 0.34), rgba(110, 168, 255, 0.26));
+	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.source-avatar {
+	display: block;
+	width: 100%;
+	height: 100%;
+	border-radius: 999px;
+	object-fit: cover;
+	background: rgba(4, 10, 20, 0.72);
+}
+
+.source-name {
+	font-weight: 700;
+	color: var(--text);
+}
+
+.source-note {
+	margin: 0;
+	font-size: 0.95rem;
+	color: var(--muted);
+	line-height: 1.6;
+}
+
+.source-details {
+	margin: 0.75rem 0 0;
+	padding-left: 1.1rem;
+	color: var(--muted);
+}
+
+.source-summary {
+	margin: 0.75rem 0 0;
+	color: var(--text);
+	line-height: 1.6;
+}

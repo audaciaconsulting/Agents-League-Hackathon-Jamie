@@ -1,0 +1,44 @@
+<article class="source-card">
+  <div class="source-card-header">
+    <div class="source-card-title">
+      @if (source.profile?.avatarFull) {
+        <div class="source-avatar-slot">
+          <img
+            class="source-avatar"
+            [src]="source.profile?.avatarFull"
+            [alt]="avatarAltText"
+            loading="lazy"
+            referrerpolicy="no-referrer"
+          />
+        </div>
+      }
+      <div class="source-name">
+        {{ sourceDisplayName }}
+      </div>
+    </div>
+    <span class="pill">{{ source.state }}</span>
+  </div>
+
+  <p class="source-note">{{ source.note }}</p>
+
+  @if (hasProfileDetails) {
+    <ul class="source-details">
+      @if (source.profile?.customUrl) {
+        <li>Custom URL: {{ source.profile?.customUrl }}</li>
+      }
+      @if (source.profile?.memberSince) {
+        <li>Member since: {{ source.profile?.memberSince }}</li>
+      }
+      @if (source.profile?.location) {
+        <li>Location: {{ source.profile?.location }}</li>
+      }
+      @if (source.profile?.stateMessage) {
+        <li>Status: {{ source.profile?.stateMessage }}</li>
+      }
+    </ul>
+  }
+
+  @if (source.profile?.summary) {
+    <p class="source-summary">{{ source.profile?.summary }}</p>
+  }
+</article>

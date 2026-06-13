@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
+import { SourceCardComponent } from '../source-card/source-card.component';
 import { RecommendationCardComponent } from '../recommendation-card/recommendation-card.component';
 import type { AnalyzeResponse } from '../../interfaces/analyze-response.interface';
 import type { Recommendation } from '../../interfaces/recommendation.interface';
@@ -10,7 +11,7 @@ import type { SourceStatus } from '../../interfaces/source-status.interface';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, FormsModule, RecommendationCardComponent],
+  imports: [CommonModule, FormsModule, RecommendationCardComponent, SourceCardComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

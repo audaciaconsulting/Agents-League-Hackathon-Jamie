@@ -68,55 +68,7 @@
 
       <div class="stack">
         @for (source of sourceStatuses; track source.id) {
-          <article class="source-card">
-            <div class="source-card-header">
-              <div class="source-card-title">
-                @if (source.profile?.avatarFull) {
-                  <div class="source-avatar-slot">
-                    <img
-                      class="source-avatar"
-                      [src]="source.profile?.avatarFull"
-                      [alt]="(source.profile?.steamId || source.label) + ' avatar'"
-                      loading="lazy"
-                      referrerpolicy="no-referrer"
-                    />
-                  </div>
-                }
-                <div class="source-name">
-                  {{ source.profile?.steamId || source.label }}
-                </div>
-              </div>
-              <span class="pill">{{ source.state }}</span>
-            </div>
-
-            <p class="source-note">{{ source.note }}</p>
-
-            @if (
-              source.profile?.customUrl ||
-              source.profile?.memberSince ||
-              source.profile?.location ||
-              source.profile?.stateMessage
-            ) {
-              <ul class="source-details">
-                @if (source.profile?.customUrl) {
-                  <li>Custom URL: {{ source.profile?.customUrl }}</li>
-                }
-                @if (source.profile?.memberSince) {
-                  <li>Member since: {{ source.profile?.memberSince }}</li>
-                }
-                @if (source.profile?.location) {
-                  <li>Location: {{ source.profile?.location }}</li>
-                }
-                @if (source.profile?.stateMessage) {
-                  <li>Status: {{ source.profile?.stateMessage }}</li>
-                }
-              </ul>
-            }
-
-            @if (source.profile?.summary) {
-              <p class="source-summary">{{ source.profile?.summary }}</p>
-            }
-          </article>
+          <app-source-card [source]="source"></app-source-card>
         }
       </div>
     </article>
