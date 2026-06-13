@@ -4,6 +4,38 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 
+interface SourceProfile {
+  steamId?: string;
+  avatarFull?: string;
+  customUrl?: string;
+  memberSince?: string;
+  location?: string;
+  stateMessage?: string;
+  summary?: string;
+}
+
+interface SourceStatus {
+  id: string;
+  label: string;
+  state: string;
+  note: string;
+  profile?: SourceProfile;
+}
+
+interface Recommendation {
+  title: string;
+  reason?: string;
+  confidence?: number;
+}
+
+interface AnalyzeResponse {
+  gamertag: string;
+  summary: string;
+  sourceStatuses?: SourceStatus[];
+  recommendations?: Recommendation[];
+  foundry?: { connected?: boolean };
+}
+
 @Component({
   selector: 'app-root',
   imports: [CommonModule, FormsModule],
@@ -18,21 +50,7 @@ export class App {
   protected statusTitle = 'Waiting for a gamertag';
   protected statusCopy = 'Add a name to inspect public signals and Foundry output.';
   protected statusTone: 'idle' | 'busy' | 'ready' | 'error' = 'idle';
-  protected sourceStatuses: Array<{
-    id: string;
-    label: string;
-    state: string;
-    note: string;
-    profile?: {
-      steamId?: string;
-      avatarFull?: string;
-      customUrl?: string;
-      memberSince?: string;
-      location?: string;
-      stateMessage?: string;
-      summary?: string;
-    };
-  }> = [
+  protected sourceStatuses: SourceStatus[] = [
     {
       id: 'steam',
       label: 'Steam',
@@ -40,11 +58,7 @@ export class App {
       note: 'Steam public profile lookup is available through the adapter.',
     },
   ];
-  protected recommendations: Array<{
-    title: string;
-    reason?: string;
-    confidence?: number;
-  }> = [];
+  protected recommendations: Recommendation[] = [];
   protected recommendationsSummary = 'No analysis has run yet.';
 
   protected get statusBadgeLabel(): string {
@@ -81,13 +95,7 @@ export class App {
 
     try {
       const response = await firstValueFrom(
-        this.http.post<{
-          gamertag: string;
-          summary: string;
-          sourceStatuses?: typeof this.sourceStatuses;
-          recommendations?: typeof this.recommendations;
-          foundry?: { connected?: boolean };
-        }>('/api/analyze', { gamertag: normalizedGamertag })
+        this.http.post<AnalyzeResponse>('/api/analyze', { gamertag: normalizedGamertag })
       );
 
       this.statusTone = response.foundry?.connected ? 'ready' : 'error';
