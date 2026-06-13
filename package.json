@@ -4,14 +4,13 @@
   "version": "0.1.0",
   "type": "commonjs",
   "scripts": {
-    "dev": "concurrently -k -n server,reload -c green,blue \"npm run dev:server\" \"npm run dev:reload\"",
+    "dev": "concurrently -k -n server,client -c green,blue \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "cross-env PORT=3001 node --watch src/server.js",
-    "dev:reload": "browser-sync start --proxy http://localhost:3001 --files \"src/public/**/*\" --no-open --no-ui",
+    "dev:client": "npm --prefix client run start",
     "start": "node src/server.js",
-    "check": "node --check src/server.js && node --check src/lib/analyze.js && node --check src/lib/env.js && node --check src/lib/foundry.js && node --check src/lib/platforms.js && node --check src/public/app.js"
+    "check": "node --check src/server.js && node --check src/lib/analyze.js && node --check src/lib/env.js && node --check src/lib/foundry.js && node --check src/lib/platforms.js && npm --prefix client run build"
   },
   "devDependencies": {
-    "browser-sync": "3.0.3",
     "concurrently": "9.1.2",
     "cross-env": "7.0.3"
   },

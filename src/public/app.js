@@ -26,6 +26,7 @@ function renderSources(sourceStatuses) {
 
     const profile = source.profile;
     const steamAvatar = source.id === 'steam' && profile?.avatarFull ? profile.avatarFull : '';
+    const sourceName = source.id === 'steam' ? profile?.steamId || source.label : source.label;
     const profileLines = profile
       ? [
           profile.customUrl ? `Custom URL: ${profile.customUrl}` : '',
@@ -39,7 +40,7 @@ function renderSources(sourceStatuses) {
       <div class="source-card-header">
         <div class="source-card-title">
           ${steamAvatar ? '<div class="source-avatar-slot"></div>' : ''}
-          <div class="source-name">${source.label}</div>
+          <div class="source-name">${sourceName}</div>
         </div>
         <span class="pill">${source.state}</span>
       </div>
@@ -53,7 +54,7 @@ function renderSources(sourceStatuses) {
       const avatar = document.createElement('img');
       avatar.className = 'source-avatar';
       avatar.src = steamAvatar;
-      avatar.alt = `${source.label} avatar`;
+      avatar.alt = `${sourceName} avatar`;
       avatar.loading = 'lazy';
       avatar.referrerPolicy = 'no-referrer';
       avatarSlot.appendChild(avatar);

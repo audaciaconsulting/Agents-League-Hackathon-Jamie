@@ -1,0 +1,153 @@
+<div class="ambient ambient-left"></div>
+<div class="ambient ambient-right"></div>
+
+<main class="shell" [class.analysis-view]="statusTone !== 'idle'">
+  <section class="hero card">
+    <div class="hero-copy">
+      <p class="eyebrow">Public-data gaming insights</p>
+      <h2>Ask for a gamertag and let Foundry suggest similar games.</h2>
+      <p class="lede">
+        This MVP only uses public information. If a platform requires auth or
+        does not expose public play history, the app will say so.
+      </p>
+
+      <form class="lookup-form" (ngSubmit)="analyzeGamertag()">
+        <label class="field-label" for="gamertag">Gamertag</label>
+        <div class="lookup-row">
+          <input
+            id="gamertag"
+            name="gamertag"
+            type="text"
+            autocomplete="off"
+            placeholder="Enter a player name"
+            minlength="3"
+            required
+            [(ngModel)]="gamertag"
+            [disabled]="isLoading"
+          />
+          <button type="submit" [disabled]="isLoading">Analyze</button>
+        </div>
+      </form>
+
+      <div class="meta-row">
+        <span class="pill">Steam public data</span>
+        <span class="pill accent">Foundry ready</span>
+      </div>
+
+      <div class="hero-status">
+        <div>
+          <p class="panel-label">Status</p>
+          <h2>{{ statusTitle }}</h2>
+          <p class="panel-copy">{{ statusCopy }}</p>
+        </div>
+        <span class="status-badge" [ngClass]="statusTone">{{ statusBadgeLabel }}</span>
+      </div>
+    </div>
+
+    <div class="hero-panel">
+      <div class="hero-panel-card">
+        <p class="panel-label">Flow</p>
+        <ol>
+          <li>Capture the gamertag.</li>
+          <li>Check public platform signals.</li>
+          <li>Send normalized data to Foundry.</li>
+          <li>Return similar game suggestions.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="dashboard">
+    <article class="card panel connectors">
+      <div class="panel-header">
+        <div>
+          <p class="panel-label">Public source snapshot</p>
+          <h2>Live source</h2>
+        </div>
+      </div>
+
+      <div class="stack">
+        @for (source of sourceStatuses; track source.id) {
+          <article class="source-card">
+            <div class="source-card-header">
+              <div class="source-card-title">
+                @if (source.profile?.avatarFull) {
+                  <div class="source-avatar-slot">
+                    <img
+                      class="source-avatar"
+                      [src]="source.profile?.avatarFull"
+                      [alt]="(source.profile?.steamId || source.label) + ' avatar'"
+                      loading="lazy"
+                      referrerpolicy="no-referrer"
+                    />
+                  </div>
+                }
+                <div class="source-name">
+                  {{ source.profile?.steamId || source.label }}
+                </div>
+              </div>
+              <span class="pill">{{ source.state }}</span>
+            </div>
+
+            <p class="source-note">{{ source.note }}</p>
+
+            @if (
+              source.profile?.customUrl ||
+              source.profile?.memberSince ||
+              source.profile?.location ||
+              source.profile?.stateMessage
+            ) {
+              <ul class="source-details">
+                @if (source.profile?.customUrl) {
+                  <li>Custom URL: {{ source.profile?.customUrl }}</li>
+                }
+                @if (source.profile?.memberSince) {
+                  <li>Member since: {{ source.profile?.memberSince }}</li>
+                }
+                @if (source.profile?.location) {
+                  <li>Location: {{ source.profile?.location }}</li>
+                }
+                @if (source.profile?.stateMessage) {
+                  <li>Status: {{ source.profile?.stateMessage }}</li>
+                }
+              </ul>
+            }
+
+            @if (source.profile?.summary) {
+              <p class="source-summary">{{ source.profile?.summary }}</p>
+            }
+          </article>
+        }
+      </div>
+    </article>
+
+    <article class="card panel wide">
+      <div class="panel-header">
+        <div>
+          <p class="panel-label">Foundry result</p>
+          <h2>Suggested games</h2>
+        </div>
+      </div>
+
+      @if (recommendations.length === 0) {
+        <div class="recommendations empty-state">{{ recommendationsSummary }}</div>
+      } @else {
+        <div class="recommendations">
+          @for (item of recommendations; track item.title) {
+            <article class="recommendation-card">
+              <div class="recommendation-header">
+                <div class="recommendation-title">{{ item.title }}</div>
+                <span class="pill accent">
+                  {{ item.confidence === undefined ? 'Foundry suggestion' : ((item.confidence * 100) | number:'1.0-0') + '% match' }}
+                </span>
+              </div>
+              <p class="recommendation-reason">
+                {{ item.reason || 'Similar vibe or genre.' }}
+              </p>
+            </article>
+          }
+        </div>
+      }
+    </article>
+  </section>
+</main>
