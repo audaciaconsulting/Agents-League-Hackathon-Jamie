@@ -20,9 +20,10 @@ wired to a real endpoint later.
 
 - Accepts a gamertag from the UI.
 - Calls a server endpoint that gathers public-data-only source data.
-- Returns Foundry-style recommendations through a dedicated analysis layer.
+- Streams Azure OpenAI-style Foundry responses through a dedicated analysis
+  layer.
 - Performs a real public Steam profile lookup by vanity URL and surfaces the
-	returned metadata in the UI.
+	returned metadata and avatar thumbnail in the UI.
 - Keeps Xbox and PlayStation clearly marked as deferred until a compliant
 	public-data source is wired in.
 
@@ -63,6 +64,19 @@ After provisioning, the script writes these values back into `.env.local`:
 - `AZURE_AI_RESOURCE_GROUP`: the resource group used by the account.
 - `AZURE_AI_LOCATION`: the region used by the account.
 - `AZURE_AI_ACCOUNT_NAME`: the provisioned account name.
+
+The Foundry connector also reads these optional overrides if you want to set
+them manually:
+
+- `FOUNDRY_IQ_ENDPOINT`: preferred Foundry endpoint, if different from the
+	Azure provisioning output.
+- `FOUNDRY_IQ_API_KEY`: preferred API key, if different from the Azure
+	provisioning output.
+- `FOUNDRY_IQ_DEPLOYMENT_NAME`: the deployed model name to query.
+
+By default, the connector uses the `gpt-5.4-nano` deployment and can run with
+either the Azure key or the local Azure credential flow shown in
+[example-foundry.js](example-foundry.js).
 
 ## Public Data Policy
 

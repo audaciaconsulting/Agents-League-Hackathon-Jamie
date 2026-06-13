@@ -1,4 +1,18 @@
 const { getConfigValue } = require('./env');
+const OpenAI = require('openai');
+const { DefaultAzureCredential, getBearerTokenProvider } = require('@azure/identity');
+
+const DEFAULT_DEPLOYMENT_NAME = 'gpt-5.4-nano';
+const AZURE_SCOPE = 'https://ai.azure.com/.default';
+
+function debugFoundry(message, details) {
+  if (typeof details === 'undefined') {
+    console.log(`[foundry] ${message}`);
+    return;
+  }
+
+  console.log(`[foundry] ${message}`, details);
+}
 
 function normalizeRecommendations(rawRecommendations) {
   if (!Array.isArray(rawRecommendations)) {
@@ -11,7 +25,7 @@ function normalizeRecommendations(rawRecommendations) {
         return {
           title: item,
           reason: '',
-          confidence: null,
+          confidence: undefined,
         };
       }
 
@@ -22,7 +36,7 @@ function normalizeRecommendations(rawRecommendations) {
       return {
         title: String(item.title || item.name || 'Suggested game').trim(),
         reason: String(item.reason || item.explanation || '').trim(),
-        confidence: typeof item.confidence === 'number' ? item.confidence : null,
+        confidence: typeof item.confidence === 'number' ? item.confidence : undefined,
       };
     })
     .filter(Boolean)
@@ -95,11 +109,90 @@ function deriveRecommendationsFromSteamProfile(steamProfile) {
   ];
 }
 
-async function callFoundry(profile) {
-  const endpoint = getConfigValue('FOUNDRY_IQ_ENDPOINT');
-  const apiKey = getConfigValue('FOUNDRY_IQ_API_KEY');
+function parseModelResponse(text) {
+  if (!text) {
+    return {};
+  }
 
-  if (!endpoint || !apiKey) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) {
+      return { summary: text };
+    }
+
+    try {
+      return JSON.parse(match[0]);
+    } catch {
+      return { summary: text };
+    }
+  }
+}
+
+function buildPrompt(profile) {
+  var prompt = [
+    'Analyze this public gamer profile and suggest the most relevant similar games.',
+    'Return only valid JSON with this shape:',
+    '{"summary":"string","recommendations":[{"title":"string","reason":"string","confidence":0.0}]}',
+    'Use the supplied public data only. Keep recommendations concise and specific.',
+    '',
+    JSON.stringify(
+      {
+        gamertag: profile.gamertag,
+        sourceStatuses: profile.sourceStatuses,
+        publicSignals: profile.publicSignals,
+        steamProfile: profile.steamProfile,
+      },
+      null,
+      2
+    ),
+  ].join('\n');
+
+  debugFoundry('Built Foundry prompt.', prompt);
+  return prompt;
+}
+
+function createOpenAIClient() {
+  const endpoint = getConfigValue('FOUNDRY_IQ_ENDPOINT') || getConfigValue('AZURE_AI_ENDPOINT');
+  const apiKey =
+    getConfigValue('FOUNDRY_IQ_API_KEY') || getConfigValue('AZURE_AI_KEY') || null;
+  const tokenProvider = getBearerTokenProvider(new DefaultAzureCredential(), AZURE_SCOPE);
+
+  if (!endpoint) {
+    debugFoundry('No Foundry endpoint configured; using offline fallback.');
+    return null;
+  }
+
+  debugFoundry('Creating Azure OpenAI client.', {
+    endpoint,
+    authMode: apiKey ? 'api-key' : 'azure-credential',
+  });
+
+  return new OpenAI({
+    baseURL: endpoint,
+    apiKey: apiKey || tokenProvider,
+  });
+}
+
+function getDeploymentName() {
+  return (
+    getConfigValue('FOUNDRY_IQ_DEPLOYMENT_NAME') ||
+    getConfigValue('AZURE_AI_DEPLOYMENT_NAME') ||
+    DEFAULT_DEPLOYMENT_NAME
+  );
+}
+
+async function callFoundry(profile) {
+  debugFoundry('Starting analysis.', {
+    gamertag: profile.gamertag,
+    hasSteamProfile: Boolean(profile.steamProfile),
+  });
+
+  const client = createOpenAIClient();
+
+  if (!client) {
+    debugFoundry('Falling back to offline insight.');
     return {
       ...buildOfflineInsight(profile),
       recommendations: profile.steamProfile
@@ -108,48 +201,50 @@ async function callFoundry(profile) {
     };
   }
 
-  const requestBody = {
-    gamertag: profile.gamertag,
-    sourceStatuses: profile.sourceStatuses,
-    publicSignals: profile.publicSignals,
-    requestType: 'game-similarity-analysis',
-  };
+  const deploymentName = getDeploymentName();
+  const prompt = buildPrompt(profile);
+
+  debugFoundry('Prepared Foundry request.', {
+    deploymentName,
+    promptLength: prompt.length,
+  });
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
 
   try {
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'api-key': apiKey,
-      },
-      body: JSON.stringify(requestBody),
-      signal: controller.signal,
+    const runner = client.responses.stream({
+      model: deploymentName,
+      input: prompt
     });
 
-    const responseText = await response.text();
-    let parsedResponse = {};
+    let responseText = '';
 
-    if (responseText) {
-      try {
-        parsedResponse = JSON.parse(responseText);
-      } catch {
-        parsedResponse = { summary: responseText };
+    runner.on('response.output_text.delta', (diff) => {
+      responseText += diff.delta;
+    });
+
+    runner.on('event', (event) => {
+      if (event?.type) {
+        debugFoundry(`Stream event: ${event.type}`);
       }
-    }
+    });
 
-    if (!response.ok) {
-      return {
-        ...buildOfflineInsight(profile),
-        source: 'error',
-        connected: false,
-        summary:
-          parsedResponse.summary ||
-          `Foundry returned ${response.status} ${response.statusText}.`,
-      };
-    }
+    runner.on('response.output_text.done', (event) => {
+      if (typeof event?.text === 'string' && event.text.trim()) {
+        responseText = event.text;
+      }
+    });
+
+    const result = await runner.finalResponse();
+    const parsedResponse = parseModelResponse(responseText || result?.output_text || '');
+
+    debugFoundry('Foundry request completed.', {
+      hasText: Boolean(responseText),
+      recommendationCount: Array.isArray(parsedResponse.recommendations)
+        ? parsedResponse.recommendations.length
+        : 0,
+    });
 
     return {
       connected: true,
@@ -163,6 +258,10 @@ async function callFoundry(profile) {
       raw: parsedResponse,
     };
   } catch (error) {
+    debugFoundry('Foundry request failed.', {
+      message: error instanceof Error ? error.message : String(error),
+    });
+
     return {
       ...buildOfflineInsight(profile),
       source: 'error',

@@ -25,6 +25,7 @@ function renderSources(sourceStatuses) {
     card.className = 'source-card';
 
     const profile = source.profile;
+    const steamAvatar = source.id === 'steam' && profile?.avatarFull ? profile.avatarFull : '';
     const profileLines = profile
       ? [
           profile.customUrl ? `Custom URL: ${profile.customUrl}` : '',
@@ -36,13 +37,27 @@ function renderSources(sourceStatuses) {
 
     card.innerHTML = `
       <div class="source-card-header">
-        <div class="source-name">${source.label}</div>
+        <div class="source-card-title">
+          ${steamAvatar ? '<div class="source-avatar-slot"></div>' : ''}
+          <div class="source-name">${source.label}</div>
+        </div>
         <span class="pill">${source.state}</span>
       </div>
       <p class="source-note">${source.note}</p>
       ${profileLines.length ? `<ul class="source-details">${profileLines.map((line) => `<li>${line}</li>`).join('')}</ul>` : ''}
       ${profile?.summary ? `<p class="source-summary">${profile.summary}</p>` : ''}
     `;
+
+    if (steamAvatar) {
+      const avatarSlot = card.querySelector('.source-avatar-slot');
+      const avatar = document.createElement('img');
+      avatar.className = 'source-avatar';
+      avatar.src = steamAvatar;
+      avatar.alt = `${source.label} avatar`;
+      avatar.loading = 'lazy';
+      avatar.referrerPolicy = 'no-referrer';
+      avatarSlot.appendChild(avatar);
+    }
 
     sourceList.appendChild(card);
   }
