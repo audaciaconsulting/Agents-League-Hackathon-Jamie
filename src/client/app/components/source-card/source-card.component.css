@@ -61,6 +61,30 @@
 	color: var(--muted);
 }
 
+.source-games {
+	margin-top: 0.85rem;
+	padding: 0.85rem 0.95rem;
+	border-radius: var(--radius-md);
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(173, 200, 228, 0.08);
+}
+
+.source-games-label {
+	margin: 0 0 0.55rem;
+	font-size: 0.82rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--accent);
+}
+
+.source-games-list {
+	margin: 0;
+	padding-left: 1.1rem;
+	color: var(--text);
+	line-height: 1.55;
+}
+
 .source-summary {
 	margin: 0.75rem 0 0;
 	color: var(--text);

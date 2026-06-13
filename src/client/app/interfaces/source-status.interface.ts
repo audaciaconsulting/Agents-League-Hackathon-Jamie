@@ -6,4 +6,5 @@ export interface SourceStatus {
   state: string;
   note: string;
   profile?: SourceProfile;
+  gameNames?: string[];
 }

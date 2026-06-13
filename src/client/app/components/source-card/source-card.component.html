@@ -38,6 +38,17 @@
     </ul>
   }
 
+  @if (hasGameNames) {
+    <div class="source-games">
+      <p class="source-games-label">Recently played</p>
+      <ul class="source-games-list">
+        @for (gameName of source.gameNames; track gameName) {
+          <li>{{ gameName }}</li>
+        }
+      </ul>
+    </div>
+  }
+
   @if (source.profile?.summary) {
     <p class="source-summary">{{ source.profile?.summary }}</p>
   }

@@ -29,4 +29,8 @@ export class SourceCardComponent {
         this.source.profile?.stateMessage
     );
   }
+
+  protected get hasGameNames(): boolean {
+    return Boolean(this.source.gameNames?.length);
+  }
 }

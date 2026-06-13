@@ -28,6 +28,7 @@ function createSteamProfileStatus(gamertag, profile) {
 
 function createSteamRecentlyPlayedStatus(gamertag, recentGamesResult) {
   const games = Array.isArray(recentGamesResult?.games) ? recentGamesResult.games : [];
+  const gameNames = games.map((game) => String(game?.name || '').trim()).filter(Boolean);
 
   return {
     id: 'steam-recently-played-games',
@@ -44,6 +45,7 @@ function createSteamRecentlyPlayedStatus(gamertag, recentGamesResult) {
         ? 'The Steam Web API returned the most recently played games.'
         : 'Steam returned no recently played games for this profile.'),
     games,
+    gameNames,
     warning: recentGamesResult?.warning,
   };
 }

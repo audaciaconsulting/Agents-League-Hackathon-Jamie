@@ -87,11 +87,12 @@ test('lookupSteamRecentlyPlayedGames returns normalized games from Steam', async
 
 test('createSteamRecentlyPlayedStatus reports warnings', () => {
   const status = createSteamRecentlyPlayedStatus('gaben', {
-    games: [],
+    games: [{ name: 'Counter-Strike 2' }, { name: 'Dota 2' }],
     warning: 'Steam Web API key is not configured.',
   });
 
   assert.equal(status.id, 'steam-recently-played-games');
   assert.equal(status.state, 'recent-games-unavailable');
   assert.equal(status.warning, 'Steam Web API key is not configured.');
+  assert.deepEqual(status.gameNames, ['Counter-Strike 2', 'Dota 2']);
 });
