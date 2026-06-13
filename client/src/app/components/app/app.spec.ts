@@ -37,4 +37,24 @@ describe('App', () => {
     expect(compiled.textContent).toContain('Forza Horizon 5');
     expect(compiled.textContent).toContain('84% match');
   });
+
+  it('should render duplicate recommendation titles without collapsing cards', () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.componentInstance.recommendations = [
+      {
+        title: 'Halo Infinite',
+        reason: 'Matched public profile language that points toward shooter-heavy play.',
+      },
+      {
+        title: 'Halo Infinite',
+        reason: 'Nearby recommendation based on the same public profile theme.',
+      },
+    ];
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelectorAll('.recommendation-card')).toHaveLength(2);
+    expect(compiled.textContent).toContain('Nearby recommendation based on the same public profile theme.');
+  });
 });

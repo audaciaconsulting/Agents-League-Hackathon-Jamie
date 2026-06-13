@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { RecommendationCardComponent } from '../recommendation-card/recommendation-card.component';
@@ -16,6 +16,7 @@ import type { SourceStatus } from '../../interfaces/source-status.interface';
 })
 export class App {
   private readonly http = inject(HttpClient);
+  private readonly changeDetectorRef = inject(ChangeDetectorRef);
 
   protected gamertag = '';
   protected isLoading = false;
@@ -84,6 +85,7 @@ export class App {
       this.recommendationsSummary = 'The request did not complete. Check the server output and try again.';
     } finally {
       this.isLoading = false;
+      this.changeDetectorRef.detectChanges();
     }
   }
 }

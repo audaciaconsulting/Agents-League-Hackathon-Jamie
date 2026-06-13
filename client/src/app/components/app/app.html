@@ -133,7 +133,7 @@
         <div class="recommendations empty-state">{{ recommendationsSummary }}</div>
       } @else {
         <div class="recommendations">
-          @for (item of recommendations; track item.title) {
+          @for (item of recommendations; track $index) {
             <app-recommendation-card [recommendation]="item" />
           }
         </div>
