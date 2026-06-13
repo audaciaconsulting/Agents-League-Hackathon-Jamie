@@ -1,7 +1,7 @@
 # Agents-League-Hackathon-Jamie
 
 Lightweight web app for public gaming profile analysis and Azure AI Foundry
-insights.
+insights, with the UI implemented in the Angular client.
 
 ## App
 
@@ -12,9 +12,13 @@ wired to a real endpoint later.
 ### Run locally
 
 1. Copy `.env.example` to `.env.local` and fill in the Azure provisioning
-	 values.
+	values.
 2. Start the app with `npm run dev`.
-3. Open `http://localhost:3000`.
+3. Open `http://localhost:3000` for the server or `http://localhost:4200` for
+	the Angular client.
+
+For the server-only path, `npm start` now builds the Angular client first and
+serves the generated app shell from `client/dist/client/browser`.
 
 ### Current behavior
 

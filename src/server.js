@@ -4,12 +4,22 @@ const path = require('path');
 const { analyzeGamertag } = require('./lib/analyze');
 
 const port = Number(process.env.PORT || 3000);
-const publicDir = path.join(__dirname, 'public');
+const clientBrowserDir = path.resolve(__dirname, '..', 'client', 'dist', 'client', 'browser');
 
 const mimeTypes = new Map([
   ['.html', 'text/html; charset=utf-8'],
   ['.css', 'text/css; charset=utf-8'],
   ['.js', 'application/javascript; charset=utf-8'],
+  ['.mjs', 'application/javascript; charset=utf-8'],
+  ['.json', 'application/json; charset=utf-8'],
+  ['.svg', 'image/svg+xml'],
+  ['.ico', 'image/x-icon'],
+  ['.png', 'image/png'],
+  ['.jpg', 'image/jpeg'],
+  ['.jpeg', 'image/jpeg'],
+  ['.webp', 'image/webp'],
+  ['.woff', 'font/woff'],
+  ['.woff2', 'font/woff2'],
 ]);
 
 function readRequestBody(request) {
@@ -37,13 +47,16 @@ function sendJson(response, statusCode, payload) {
   response.end(body);
 }
 
+function getContentType(filePath) {
+  return mimeTypes.get(path.extname(filePath).toLowerCase()) || 'application/octet-stream';
+}
+
 function serveStaticFile(response, filePath) {
   try {
     const content = fs.readFileSync(filePath);
-    const extension = path.extname(filePath).toLowerCase();
 
     response.writeHead(200, {
-      'Content-Type': mimeTypes.get(extension) || 'application/octet-stream',
+      'Content-Type': getContentType(filePath),
       'Content-Length': content.length,
     });
     response.end(content);
@@ -51,6 +64,25 @@ function serveStaticFile(response, filePath) {
     response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
     response.end('Not found');
   }
+}
+
+function resolveClientAsset(requestPath) {
+  if (!fs.existsSync(clientBrowserDir)) {
+    return undefined;
+  }
+
+  const relativePath = requestPath === '/' ? 'index.html' : requestPath.slice(1);
+  const resolvedPath = path.resolve(clientBrowserDir, relativePath);
+
+  if (!resolvedPath.startsWith(`${clientBrowserDir}${path.sep}`) && resolvedPath !== path.join(clientBrowserDir, 'index.html')) {
+    return undefined;
+  }
+
+  if (fs.existsSync(resolvedPath) && fs.statSync(resolvedPath).isFile()) {
+    return resolvedPath;
+  }
+
+  return path.join(clientBrowserDir, 'index.html');
 }
 
 const server = http.createServer(async (request, response) => {
@@ -90,16 +122,15 @@ const server = http.createServer(async (request, response) => {
     return;
   }
 
-  const fileName = requestUrl.pathname === '/' ? 'index.html' : requestUrl.pathname.slice(1);
-  const filePath = path.join(publicDir, fileName);
+  const assetPath = resolveClientAsset(requestUrl.pathname);
 
-  if (filePath.startsWith(publicDir) && fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-    serveStaticFile(response, filePath);
+  if (assetPath) {
+    serveStaticFile(response, assetPath);
     return;
   }
 
-  response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-  response.end('Not found');
+  response.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+  response.end('Angular build output not found. Run `npm --prefix client run build` first.');
 });
 
 server.listen(port, () => {
