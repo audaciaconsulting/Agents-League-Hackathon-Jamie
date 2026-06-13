@@ -133,6 +133,7 @@ function parseModelResponse(text) {
 function buildPrompt(profile) {
   var prompt = [
     'Analyze this public gamer profile and suggest the most relevant similar games.',
+    'Treat the five most recently played Steam games as the strongest direct play-history signal when available.',
     'Return only valid JSON with this shape:',
     '{"summary":"string","recommendations":[{"title":"string","reason":"string","confidence":0.0}]}',
     'Use the supplied public data only. Keep recommendations concise and specific.',
@@ -143,6 +144,8 @@ function buildPrompt(profile) {
         sourceStatuses: profile.sourceStatuses,
         publicSignals: profile.publicSignals,
         steamProfile: profile.steamProfile,
+        steamRecentlyPlayedGames: profile.steamRecentlyPlayedGames,
+        steamRecentlyPlayedGamesStatus: profile.steamRecentlyPlayedGamesStatus,
       },
       null,
       2
@@ -187,6 +190,9 @@ async function callFoundry(profile) {
   debugFoundry('Starting analysis.', {
     gamertag: profile.gamertag,
     hasSteamProfile: Boolean(profile.steamProfile),
+    hasSteamRecentlyPlayedGames: Array.isArray(profile.steamRecentlyPlayedGames)
+      ? profile.steamRecentlyPlayedGames.length > 0
+      : false,
   });
 
   const client = createOpenAIClient();

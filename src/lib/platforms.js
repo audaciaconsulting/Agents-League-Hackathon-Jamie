@@ -1,3 +1,8 @@
+const { getConfigValue } = require('./env');
+
+const DEFAULT_STEAM_WEB_API_URL = 'https://api.steampowered.com';
+const STEAM_RECENT_GAMES_COUNT = 5;
+
 function createSourceStatus(gamertag, id, label, note) {
   return {
     id,
@@ -21,6 +26,28 @@ function createSteamProfileStatus(gamertag, profile) {
   };
 }
 
+function createSteamRecentlyPlayedStatus(gamertag, recentGamesResult) {
+  const games = Array.isArray(recentGamesResult?.games) ? recentGamesResult.games : [];
+
+  return {
+    id: 'steam-recently-played-games',
+    label: 'Steam recent games',
+    gamertag,
+    state: recentGamesResult?.warning
+      ? 'recent-games-unavailable'
+      : games.length > 0
+        ? 'recent-games-found'
+        : 'recent-games-empty',
+    note:
+      recentGamesResult?.warning ||
+      (games.length > 0
+        ? 'The Steam Web API returned the most recently played games.'
+        : 'Steam returned no recently played games for this profile.'),
+    games,
+    warning: recentGamesResult?.warning,
+  };
+}
+
 function getSourceStatuses(gamertag) {
   return [
     createSourceStatus(
@@ -30,6 +57,19 @@ function getSourceStatuses(gamertag) {
       'Steam public profile lookup is available through the adapter.'
     ),
   ];
+}
+
+function buildSteamRecentlyPlayedGamesUrl(steamId64) {
+  const baseUrl = getConfigValue('STEAM_WEB_API_URL', DEFAULT_STEAM_WEB_API_URL);
+  const url = new URL('/IPlayerService/GetRecentlyPlayedGames/v0001/', baseUrl);
+
+  url.searchParams.set('key', getConfigValue('STEAM_WEB_API_KEY'));
+  url.searchParams.set('steamid', String(steamId64 || '').trim());
+  url.searchParams.set('count', String(STEAM_RECENT_GAMES_COUNT));
+  url.searchParams.set('include_appinfo', '1');
+  url.searchParams.set('format', 'json');
+
+  return url;
 }
 
 function decodeXmlValue(value) {
@@ -94,9 +134,86 @@ async function lookupSteamPublicProfile(gamertag) {
   return extractSteamProfile(xml);
 }
 
+function normalizeSteamRecentlyPlayedGames(games) {
+  if (!Array.isArray(games)) {
+    return [];
+  }
+
+  return games.slice(0, STEAM_RECENT_GAMES_COUNT).map((game, index) => ({
+    appId: Number(game?.appid) || undefined,
+    name: String(game?.name || '').trim(),
+    rank: index + 1,
+    playtimeTwoWeeksMinutes:
+      typeof game?.playtime_2weeks === 'number' ? game.playtime_2weeks : undefined,
+    playtimeForeverMinutes:
+      typeof game?.playtime_forever === 'number' ? game.playtime_forever : undefined,
+    iconUrl: game?.img_icon_url
+      ? `https://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg`
+      : undefined,
+    logoUrl: game?.img_logo_url
+      ? `https://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_logo_url}.jpg`
+      : undefined,
+  }));
+}
+
+async function lookupSteamRecentlyPlayedGames(steamId64) {
+  const steamid = String(steamId64 || '').trim();
+  if (!steamid) {
+    return {
+      games: [],
+      warning: 'SteamID64 was not available for the recently played games lookup.',
+    };
+  }
+
+  const apiKey = String(getConfigValue('STEAM_WEB_API_KEY') || '').trim();
+  if (!apiKey) {
+    return {
+      games: [],
+      warning: 'Steam Web API key is not configured.',
+    };
+  }
+
+  const url = buildSteamRecentlyPlayedGamesUrl(steamid);
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0',
+        Accept: 'application/json,text/plain;q=0.9,*/*;q=0.8',
+      },
+    });
+
+    if (!response.ok) {
+      return {
+        games: [],
+        warning: `Steam recently played games request failed with status ${response.status}.`,
+      };
+    }
+
+    const payload = await response.json();
+    const games = normalizeSteamRecentlyPlayedGames(payload?.response?.games);
+
+    return {
+      games,
+      warning: games.length > 0 ? undefined : 'Steam returned no recently played games.',
+    };
+  } catch (error) {
+    return {
+      games: [],
+      warning:
+        error instanceof Error
+          ? `Steam recently played games lookup failed: ${error.message}`
+          : 'Steam recently played games lookup failed.',
+    };
+  }
+}
+
 module.exports = {
+  createSteamRecentlyPlayedStatus,
   createSteamProfileStatus,
   extractSteamProfile,
   getSourceStatuses,
   lookupSteamPublicProfile,
+  lookupSteamRecentlyPlayedGames,
+  normalizeSteamRecentlyPlayedGames,
 };

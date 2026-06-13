@@ -28,7 +28,10 @@ serves the generated app shell from `src/client/dist/client/browser`.
   layer.
 - Performs a real public Steam profile lookup by vanity URL and surfaces the
 	returned metadata and avatar thumbnail in the UI.
-- Focuses the live source flow on Steam public profile data.
+- Looks up the five most recently played Steam games when a Steam Web API key
+	is configured and passes that history into the Foundry query.
+- Focuses the live source flow on Steam public profile data and recent play
+	history.
 
 ## Azure Foundry / Azure AI Services setup
 
@@ -76,6 +79,31 @@ them manually:
 - `FOUNDRY_IQ_API_KEY`: preferred API key, if different from the Azure
 	provisioning output.
 - `FOUNDRY_IQ_DEPLOYMENT_NAME`: the deployed model name to query.
+
+## Steam Web API setup
+
+The server can enrich Foundry prompts with the five most recently played games
+from the Steam Web API. It uses the public Steam profile lookup to resolve the
+SteamID64 first, then calls the Steam Web API recent-games endpoint.
+
+See [GetRecentlyPlayedGames (v0001)](https://developer.valvesoftware.com/wiki/Steam_Web_API#GetRecentlyPlayedGames_(v0001))
+for the endpoint documentation.
+
+Add these values to `.env.local`:
+
+```env
+STEAM_WEB_API_URL=https://api.steampowered.com
+STEAM_WEB_API_KEY=
+```
+
+These values are used as follows:
+
+- `STEAM_WEB_API_URL`: configurable base URL for the Steam Web API.
+- `STEAM_WEB_API_KEY`: Steam Web API key required to call the recent-games
+	endpoint.
+
+The URL is configurable so the endpoint location can be updated without code
+changes.
 
 By default, the connector uses the `gpt-5.4-nano` deployment and can run with
 either the Azure key or the local Azure credential flow shown in

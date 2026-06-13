@@ -1,7 +1,9 @@
 const {
   getSourceStatuses,
   lookupSteamPublicProfile,
+  lookupSteamRecentlyPlayedGames,
   createSteamProfileStatus,
+  createSteamRecentlyPlayedStatus,
 } = require('./platforms');
 const { callFoundry } = require('./foundry');
 
@@ -13,8 +15,10 @@ async function analyzeGamertag(inputGamertag) {
   const gamertag = normalizeGamertag(inputGamertag);
   const sourceStatuses = getSourceStatuses(gamertag);
   const steamProfile = await lookupSteamPublicProfile(gamertag);
+  const steamRecentlyPlayedGames = await lookupSteamRecentlyPlayedGames(steamProfile?.steamId64);
 
   sourceStatuses[0] = createSteamProfileStatus(gamertag, steamProfile);
+  sourceStatuses.push(createSteamRecentlyPlayedStatus(gamertag, steamRecentlyPlayedGames));
 
   const publicSignals = steamProfile
     ? [
@@ -34,6 +38,16 @@ async function analyzeGamertag(inputGamertag) {
           summary: steamProfile.summary,
           headline: steamProfile.headline,
         },
+        ...(steamRecentlyPlayedGames.games.length > 0
+          ? [
+              {
+                source: 'steam',
+                type: 'recently-played-games',
+                steamId64: steamProfile.steamId64,
+                games: steamRecentlyPlayedGames.games,
+              },
+            ]
+          : []),
       ]
     : [];
 
@@ -42,6 +56,10 @@ async function analyzeGamertag(inputGamertag) {
     sourceStatuses,
     publicSignals,
     steamProfile,
+    steamRecentlyPlayedGames: steamRecentlyPlayedGames.games,
+    steamRecentlyPlayedGamesStatus: steamRecentlyPlayedGames.warning
+      ? steamRecentlyPlayedGames.warning
+      : undefined,
   });
 
   return {
@@ -49,6 +67,8 @@ async function analyzeGamertag(inputGamertag) {
     sourceStatuses,
     publicSignals,
     steamProfile,
+    steamRecentlyPlayedGames: steamRecentlyPlayedGames.games,
+    steamRecentlyPlayedGamesWarning: steamRecentlyPlayedGames.warning,
     foundry: foundryInsight,
     summary: foundryInsight.summary || 'No public play-history data was available to analyze yet.',
     recommendations: foundryInsight.recommendations || [],
