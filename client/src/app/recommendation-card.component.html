@@ -1,0 +1,10 @@
+<article class="recommendation-card">
+  <div class="recommendation-header">
+    <div class="recommendation-title">{{ recommendation.title }}</div>
+    <span class="pill accent">{{ confidenceLabel }}</span>
+  </div>
+
+  <p class="recommendation-reason">
+    {{ recommendation.reason || 'Similar vibe or genre.' }}
+  </p>
+</article>

@@ -134,17 +134,7 @@
       } @else {
         <div class="recommendations">
           @for (item of recommendations; track item.title) {
-            <article class="recommendation-card">
-              <div class="recommendation-header">
-                <div class="recommendation-title">{{ item.title }}</div>
-                <span class="pill accent">
-                  {{ item.confidence === undefined ? 'Foundry suggestion' : ((item.confidence * 100) | number:'1.0-0') + '% match' }}
-                </span>
-              </div>
-              <p class="recommendation-reason">
-                {{ item.reason || 'Similar vibe or genre.' }}
-              </p>
-            </article>
+            <app-recommendation-card [recommendation]="item" />
           }
         </div>
       }

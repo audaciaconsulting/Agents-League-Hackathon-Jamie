@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
+import { RecommendationCardComponent, type Recommendation } from './recommendation-card.component';
 
 interface SourceProfile {
   steamId?: string;
@@ -22,12 +23,6 @@ interface SourceStatus {
   profile?: SourceProfile;
 }
 
-interface Recommendation {
-  title: string;
-  reason?: string;
-  confidence?: number;
-}
-
 interface AnalyzeResponse {
   gamertag: string;
   summary: string;
@@ -38,7 +33,7 @@ interface AnalyzeResponse {
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RecommendationCardComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
