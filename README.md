@@ -24,8 +24,7 @@ wired to a real endpoint later.
   layer.
 - Performs a real public Steam profile lookup by vanity URL and surfaces the
 	returned metadata and avatar thumbnail in the UI.
-- Keeps Xbox and PlayStation clearly marked as deferred until a compliant
-	public-data source is wired in.
+- Focuses the live source flow on Steam public profile data.
 
 ## Azure Foundry / Azure AI Services setup
 
@@ -89,5 +88,4 @@ than attempting to bypass access controls.
 - Steam public profile XML is the first live adapter.
 - The gamertag input is currently treated as a Steam vanity name for that
 	lookup path.
-- Xbox and PlayStation remain planned adapters until a compliant public source
-	is verified.
+

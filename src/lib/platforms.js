@@ -29,18 +29,6 @@ function getSourceStatuses(gamertag) {
       'Steam',
       'Steam public profile lookup is available through the adapter.'
     ),
-    createSourceStatus(
-      gamertag,
-      'xbox',
-      'Xbox',
-      'Public unauthenticated play-history access still needs a verified adapter.'
-    ),
-    createSourceStatus(
-      gamertag,
-      'playstation',
-      'PlayStation',
-      'Deferred until a compliant public-data connector is confirmed.'
-    ),
   ];
 }
 
