@@ -133,7 +133,7 @@ function parseModelResponse(text) {
 function buildPrompt(profile) {
   var prompt = [
     'Analyze this public gamer profile and suggest the most relevant similar games.',
-    'Treat the five most recently played Steam games as the strongest direct play-history signal when available.',
+    'Treat the five most recently played Steam games as the strongest direct play-history signal when available, but do not recommend any of those recently played games; focus only on new game recommendations.',
     'Return only valid JSON with this shape:',
     '{"summary":"string","recommendations":[{"title":"string","reason":"string","confidence":0.0}]}',
     'Use the supplied public data only. Keep recommendations concise and specific.',
