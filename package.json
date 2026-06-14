@@ -8,6 +8,8 @@
     "dev:server": "cross-env PORT=3001 node --watch src/server.js",
     "dev:client": "npm --prefix src/client run start",
     "build:client": "npm --prefix src/client run build",
+    "provision:azure": "pwsh scripts/create-azure-foundry-instance.ps1",
+    "provision:azure:dry-run": "pwsh scripts/create-azure-foundry-instance.ps1 -DryRun",
     "start": "npm run build:client && node src/server.js",
     "check": "node --check src/server.js && node --check src/lib/analyze.js && node --check src/lib/env.js && node --check src/lib/foundry.js && node --check src/lib/platforms.js && npm --prefix src/client run build"
   },

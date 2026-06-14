@@ -36,8 +36,16 @@ serves the generated app shell from `src/client/dist/client/browser`.
 ## Azure Foundry / Azure AI Services setup
 
 Use [scripts/create-azure-foundry-instance.ps1](scripts/create-azure-foundry-instance.ps1)
-to provision the Azure resource and store the connection details in your local
-`.env.local` file.
+to provision the Azure resource group and Azure AI Services account with
+Terraform, then store the connection details in your local `.env.local` file.
+
+The script expects Terraform and Azure CLI to be installed locally. It reads
+its input values from `.env.local`, applies the Terraform configuration in
+[infra/terraform](infra/terraform), and refreshes the generated Azure output
+values after a successful apply.
+
+To preview the Terraform change set without creating or updating resources, run
+`npm run provision:azure:dry-run`.
 
 Add these values to `.env.local` before running the script:
 
@@ -62,6 +70,15 @@ These values are used as follows:
 - `AZURE_KIND`: selects the account kind, with `AIServices` as the default if
 	omitted.
 
+Terraform manages the resource group and the Azure AI Services account. The
+current implementation keeps the provisioning boundary intentionally narrow so
+new contributors can create a fresh environment without needing the existing
+Azure resource group to already exist.
+
+The dry-run command performs `terraform plan` only. It does not update
+`.env.local` because no resource outputs are available until the apply step
+completes.
+
 After provisioning, the script writes these values back into `.env.local`:
 
 - `AZURE_AI_ENDPOINT`: the service endpoint URL.
@@ -79,6 +96,11 @@ them manually:
 - `FOUNDRY_IQ_API_KEY`: preferred API key, if different from the Azure
 	provisioning output.
 - `FOUNDRY_IQ_DEPLOYMENT_NAME`: the deployed model name to query.
+
+If you already have an Azure AI Foundry or Azure OpenAI deployment that uses a
+different endpoint shape, you can continue setting the `FOUNDRY_IQ_*`
+variables by hand and the runtime will prefer them over the Terraform-managed
+defaults.
 
 ## Steam Web API setup
 

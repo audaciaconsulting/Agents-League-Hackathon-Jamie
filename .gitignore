@@ -2,6 +2,14 @@
 .env.local
 .local/
 
+# Terraform state and local metadata
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+terraform.tfvars.json
+*.tfplan
+
 # Node app artifacts
 node_modules/
 dist/

@@ -1,7 +1,25 @@
 #!/usr/bin/env pwsh
+<#
+.SYNOPSIS
+Creates or updates the Azure AI Services resources used by the app.
+
+.DESCRIPTION
+This script reads the local provisioning settings from .env.local, applies the
+Terraform configuration under infra/terraform, and writes the resulting Azure
+connection values back into the same local file. Use -DryRun to preview the
+Terraform plan without making any changes.
+
+.EXAMPLE
+pwsh scripts/create-azure-foundry-instance.ps1
+
+.EXAMPLE
+pwsh scripts/create-azure-foundry-instance.ps1 -DryRun
+#>
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(
-    [string]$OutputPath = (Join-Path $PSScriptRoot '..\.env.local')
+    [string]$OutputPath = (Join-Path $PSScriptRoot '..\.env.local'),
+    [string]$TerraformWorkingDirectory = (Join-Path $PSScriptRoot '..\infra\terraform'),
+    [switch]$DryRun
 )
 
 $ErrorActionPreference = 'Stop'
@@ -59,12 +77,6 @@ function Get-RequiredValue {
     return [string]$value
 }
 
-function Assert-AzureCli {
-    if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
-        throw 'Azure CLI is required. Install it and run az login before invoking this script.'
-    }
-}
-
 function Write-ConnectionFile {
     param(
         [Parameter(Mandatory = $true)]
@@ -107,7 +119,32 @@ function Write-ConnectionFile {
     $lines -join [Environment]::NewLine | Set-Content -LiteralPath $Path
 }
 
-Assert-AzureCli
+function Assert-CommandAvailable {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+        [Parameter(Mandatory = $true)]
+        [string]$Message
+    )
+
+    if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
+        throw $Message
+    }
+}
+
+function ConvertTo-TerraformArgument {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+        [Parameter(Mandatory = $true)]
+        [string]$Value
+    )
+
+    return @('-var', "$Name=$Value")
+}
+
+Assert-CommandAvailable -Name 'terraform' -Message 'Terraform is required. Install it before invoking this script.'
+Assert-CommandAvailable -Name 'az' -Message 'Azure CLI is required. Install it and run az login before invoking this script.'
 
 $config = Read-EnvironmentFile -Path $OutputPath
 $subscriptionId = $config['AZURE_SUBSCRIPTION_ID']
@@ -119,26 +156,52 @@ $kind = if ([string]::IsNullOrWhiteSpace([string]$config['AZURE_KIND'])) { 'AISe
 
 if ($subscriptionId) {
     az account set --subscription $subscriptionId | Out-Null
+    $env:ARM_SUBSCRIPTION_ID = $subscriptionId
 }
 
-az group create --name $resourceGroupName --location $location | Out-Null
+if (-not (Test-Path -LiteralPath $TerraformWorkingDirectory)) {
+    throw "Terraform working directory not found: $TerraformWorkingDirectory"
+}
 
-$existingAccount = az cognitiveservices account list --resource-group $resourceGroupName --query "[?name=='$accountName'] | [0]" -o json | ConvertFrom-Json
-if (-not $existingAccount) {
-    if ($PSCmdlet.ShouldProcess($accountName, 'Create Azure AI services account')) {
-        az cognitiveservices account create `
-            --name $accountName `
-            --resource-group $resourceGroupName `
-            --location $location `
-            --kind $kind `
-            --sku $sku | Out-Null
+if (-not $PSCmdlet.ShouldProcess($resourceGroupName, $(if ($DryRun.IsPresent) { 'Preview Terraform configuration' } else { 'Apply Terraform configuration' }))) {
+    return
+}
+
+Push-Location $TerraformWorkingDirectory
+try {
+    terraform init -input=false | Out-Null
+
+    $terraformArguments = @()
+    $terraformArguments += ConvertTo-TerraformArgument -Name 'resource_group_name' -Value $resourceGroupName
+    $terraformArguments += ConvertTo-TerraformArgument -Name 'location' -Value $location
+    $terraformArguments += ConvertTo-TerraformArgument -Name 'account_name' -Value $accountName
+    $terraformArguments += ConvertTo-TerraformArgument -Name 'sku_name' -Value $sku
+    $terraformArguments += ConvertTo-TerraformArgument -Name 'kind' -Value $kind
+
+    if ($DryRun.IsPresent) {
+        terraform plan -input=false @terraformArguments
+        $planExitCode = $LASTEXITCODE
+        if ($planExitCode -eq 1) {
+            throw 'Terraform plan failed.'
+        }
+
+        Write-Output 'Terraform dry run completed. No resources were changed.'
+        return
     }
+
+    terraform apply -auto-approve -input=false @terraformArguments | Out-Null
+    $terraformOutput = terraform output -json | ConvertFrom-Json
+}
+finally {
+    Pop-Location
 }
 
-$endpoint = az cognitiveservices account show --name $accountName --resource-group $resourceGroupName --query 'properties.endpoint' -o tsv
-$resourceId = az cognitiveservices account show --name $accountName --resource-group $resourceGroupName --query 'id' -o tsv
-$keys = az cognitiveservices account keys list --name $accountName --resource-group $resourceGroupName | ConvertFrom-Json
-$primaryKey = $keys.key1
+$endpoint = [string]$terraformOutput.account_endpoint.value
+$resourceId = [string]$terraformOutput.account_resource_id.value
+$outputResourceGroup = [string]$terraformOutput.resource_group_name.value
+$outputLocation = [string]$terraformOutput.location.value
+$outputAccountName = [string]$terraformOutput.account_name.value
+$primaryKey = [string]$terraformOutput.account_primary_access_key.value
 
 if ([string]::IsNullOrWhiteSpace($OutputPath) -eq $false) {
     Write-ConnectionFile `
@@ -146,13 +209,13 @@ if ([string]::IsNullOrWhiteSpace($OutputPath) -eq $false) {
         -Endpoint $endpoint `
         -Key $primaryKey `
         -ResourceId $resourceId `
-        -ResourceGroup $resourceGroupName `
-        -Location $location `
-        -AccountName $accountName
+        -ResourceGroup $outputResourceGroup `
+        -Location $outputLocation `
+        -AccountName $outputAccountName
 }
 
-Write-Host "Azure AI services account is ready: $accountName"
-Write-Host "Endpoint: $endpoint"
+Write-Output "Azure AI services account is ready: $outputAccountName"
+Write-Output "Endpoint: $endpoint"
 if ($OutputPath) {
-    Write-Host "Connection details written to: $OutputPath"
+    Write-Output "Connection details written to: $OutputPath"
 }
