@@ -31,4 +31,24 @@ describe('SourceCardComponent', () => {
     expect(compiled.textContent).toContain('Custom URL: gabesgames');
     expect(compiled.textContent).toContain('Member since: 2004');
   });
+
+  it('renders HTML summary content when the profile summary contains markup', () => {
+    const fixture = TestBed.createComponent(SourceCardComponent);
+    fixture.componentInstance.source = {
+      id: 'steam',
+      label: 'Steam',
+      state: 'live',
+      note: 'Steam public profile lookup is available through the adapter.',
+      profile: {
+        steamId: 'gaben',
+        summary: '<strong>Public profile</strong> summary.',
+      },
+    };
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelector('.source-summary strong')).not.toBeNull();
+    expect(compiled.textContent).toContain('Public profile summary.');
+  });
 });

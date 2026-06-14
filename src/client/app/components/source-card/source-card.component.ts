@@ -21,6 +21,21 @@ export class SourceCardComponent {
     return `${this.sourceDisplayName} avatar`;
   }
 
+  protected get sourceSummary(): string {
+    return this.source.profile?.summary?.trim() || '';
+  }
+
+  protected get sourceSummaryHasHtml(): boolean {
+    const summary = this.sourceSummary;
+
+    if (!summary) {
+      return false;
+    }
+
+    const parsedDocument = new DOMParser().parseFromString(summary, 'text/html');
+    return Boolean(parsedDocument.body.querySelector('*'));
+  }
+
   protected get hasProfileDetails(): boolean {
     return Boolean(
       this.source.profile?.customUrl ||
