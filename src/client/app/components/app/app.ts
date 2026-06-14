@@ -32,7 +32,7 @@ export class App {
       note: 'Steam public profile lookup is available through the adapter.',
     },
   ];
-  protected recommendations: Recommendation[] = [];
+  recommendations: Recommendation[] = [];
   protected recommendationsSummary = 'No analysis has run yet.';
 
   protected get statusBadgeLabel(): string {

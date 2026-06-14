@@ -22,4 +22,18 @@ describe('RecommendationCardComponent', () => {
     expect(compiled.textContent).toContain('Halo Infinite');
     expect(compiled.textContent).toContain('92% match');
   });
+
+  it('falls back to the Foundry suggestion label when confidence is missing', () => {
+    const fixture = TestBed.createComponent(RecommendationCardComponent);
+    fixture.componentInstance.recommendation = {
+      title: 'Forza Horizon 5',
+      reason: 'Fallback recommendation based on broad mainstream appeal.',
+    };
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.textContent).toContain('Forza Horizon 5');
+    expect(compiled.textContent).toContain('Foundry suggestion');
+  });
 });

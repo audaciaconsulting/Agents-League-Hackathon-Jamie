@@ -1,6 +1,9 @@
-<article class="recommendation-card">
+<article class="recommendation-card" [attr.aria-label]="recommendation.title">
   <div class="recommendation-header">
-    <div class="recommendation-title">{{ recommendation.title }}</div>
+    <div class="recommendation-title-group">
+      <p class="recommendation-eyebrow">Suggested game</p>
+      <h3 class="recommendation-title">{{ recommendation.title }}</h3>
+    </div>
     <span class="pill accent">{{ confidenceLabel }}</span>
   </div>
 
